@@ -1,67 +1,31 @@
-﻿import json
+﻿from __future__ import annotations
+
+import time
 from pathlib import Path
 
-import nmap
 from rich.console import Console
 from rich.table import Table
 
+from modules.event_logger import log_event
+from modules.inventory import device_key, is_trusted, load_trusted_devices
+from modules.notifier import notify_unknown_device
+from modules.scanner import scan_network
+
+
 NETWORK = "192.168.1.0/24"
-TRUSTED_FILE = Path(r"C:\SentinelHome\trusted_devices.json")
+SCAN_INTERVAL_SECONDS = 30
+
+PROJECT_DIR = Path(__file__).resolve().parent
+TRUSTED_FILE = PROJECT_DIR / "trusted_devices.json"
+LOG_FILE = PROJECT_DIR / "logs" / "sentinelhome_events.jsonl"
 
 console = Console()
 
 
-def load_trusted_devices() -> dict:
-    if not TRUSTED_FILE.exists():
-        return {}
+def display_devices(devices: list[dict[str, str]], trusted: dict) -> None:
+    """Display the current device inventory."""
+    table = Table(title="SentinelHome Live Device Inventory")
 
-    try:
-        return json.loads(TRUSTED_FILE.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError):
-        console.print("[red]Trusted-device file could not be read. Starting empty.[/red]")
-        return {}
-
-
-def save_trusted_devices(devices: dict) -> None:
-    TRUSTED_FILE.write_text(
-        json.dumps(devices, indent=4),
-        encoding="utf-8"
-    )
-
-
-def scan_network() -> list[dict]:
-    scanner = nmap.PortScanner()
-    scanner.scan(hosts=NETWORK, arguments="-sn")
-
-    devices = []
-
-    for host in scanner.all_hosts():
-        addresses = scanner[host].get("addresses", {})
-        mac = addresses.get("mac", "Unknown").upper()
-
-        vendor_data = scanner[host].get("vendor", {})
-        vendor = vendor_data.get(mac, "Unknown")
-
-        devices.append(
-            {
-                "ip": host,
-                "hostname": scanner[host].hostname() or "Unknown",
-                "mac": mac,
-                "vendor": vendor,
-            }
-        )
-
-    return devices
-
-
-def main() -> None:
-    console.print("[bold cyan]SentinelHome[/bold cyan]")
-    console.print("[+] Scanning your home network...\n")
-
-    trusted = load_trusted_devices()
-    discovered = scan_network()
-
-    table = Table(title="SentinelHome Device Inventory")
     table.add_column("Status")
     table.add_column("Device Name")
     table.add_column("IP Address")
@@ -69,22 +33,19 @@ def main() -> None:
     table.add_column("MAC Address")
     table.add_column("Vendor")
 
-    unknown_devices = []
-
-    for device in discovered:
+    for device in devices:
         mac = device["mac"]
 
-        if mac != "UNKNOWN" and mac in trusted:
+        if is_trusted(device, trusted):
             status = "[green]TRUSTED[/green]"
-            name = trusted[mac]["name"]
+            device_name = trusted[mac].get("name", device["hostname"])
         else:
-            status = "[bold red]NEW[/bold red]"
-            name = "Unapproved"
-            unknown_devices.append(device)
+            status = "[bold red]UNKNOWN[/bold red]"
+            device_name = "Unapproved"
 
         table.add_row(
             status,
-            name,
+            device_name,
             device["ip"],
             device["hostname"],
             mac,
@@ -93,40 +54,66 @@ def main() -> None:
 
     console.print(table)
 
-    if not unknown_devices:
-        console.print("\n[green]No unknown devices detected.[/green]")
-        return
 
+def main() -> None:
+    console.print("[bold cyan]SentinelHome Live Monitor[/bold cyan]")
     console.print(
-        f"\n[bold yellow]{len(unknown_devices)} new or unapproved device(s) detected.[/bold yellow]"
+        f"Scanning [bold]{NETWORK}[/bold] every "
+        f"[bold]{SCAN_INTERVAL_SECONDS} seconds[/bold]."
     )
+    console.print("Press [bold]Ctrl + C[/bold] to stop.\n")
 
-    for device in unknown_devices:
-        if device["mac"] == "UNKNOWN":
+    trusted_devices = load_trusted_devices(TRUSTED_FILE)
+
+    # Prevents the same unknown device from triggering every 30 seconds.
+    alerted_unknown_devices: set[str] = set()
+
+    while True:
+        try:
+            devices = scan_network(NETWORK)
+            console.clear()
+            display_devices(devices, trusted_devices)
+
+            current_unknown_keys: set[str] = set()
+
+            for device in devices:
+                if is_trusted(device, trusted_devices):
+                    continue
+
+                key = device_key(device)
+                current_unknown_keys.add(key)
+
+                if key not in alerted_unknown_devices:
+                    console.print(
+                        "\n[bold red]UNKNOWN DEVICE DETECTED[/bold red]\n"
+                        f"Hostname: {device['hostname']}\n"
+                        f"IP: {device['ip']}\n"
+                        f"MAC: {device['mac']}\n"
+                        f"Vendor: {device['vendor']}\n"
+                    )
+
+                    notify_unknown_device(device)
+                    log_event(LOG_FILE, "unknown_device_detected", device)
+                    alerted_unknown_devices.add(key)
+
+            # If an unknown device disconnects, remove it from the session
+            # alert set. A later reconnection will trigger a fresh alert.
+            alerted_unknown_devices.intersection_update(current_unknown_keys)
+
             console.print(
-                f"\n[yellow]Cannot approve {device['ip']} because its MAC address was unavailable.[/yellow]"
+                f"\nNext scan in {SCAN_INTERVAL_SECONDS} seconds. "
+                "Press Ctrl + C to stop."
             )
-            continue
+            time.sleep(SCAN_INTERVAL_SECONDS)
 
-        console.print(
-            f"\nIP: {device['ip']}\n"
-            f"Hostname: {device['hostname']}\n"
-            f"MAC: {device['mac']}\n"
-            f"Vendor: {device['vendor']}"
-        )
+        except KeyboardInterrupt:
+            console.print("\n[yellow]SentinelHome monitoring stopped.[/yellow]")
+            break
 
-        approve = input("Approve this device? (y/n): ").strip().lower()
-
-        if approve == "y":
-            name = input("Enter a friendly name: ").strip()
-            trusted[device["mac"]] = {
-                "name": name or device["hostname"],
-                "vendor": device["vendor"],
-            }
-            console.print("[green]Device approved.[/green]")
-
-    save_trusted_devices(trusted)
-    console.print(f"\n[cyan]Trusted inventory saved to {TRUSTED_FILE}[/cyan]")
+        except Exception as error:
+            console.print(f"\n[bold red]Monitoring error:[/bold red] {error}")
+            console.print("Retrying in 30 seconds...")
+            time.sleep(SCAN_INTERVAL_SECONDS)
 
 
 if __name__ == "__main__":
