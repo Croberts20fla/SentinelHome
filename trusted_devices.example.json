@@ -1,0 +1,10 @@
+{
+  "AA:BB:CC:11:22:33": {
+    "name": "Example Phone",
+    "vendor": "Example Vendor"
+  },
+  "DD:EE:FF:44:55:66": {
+    "name": "Example Smart TV",
+    "vendor": "Example Vendor"
+  }
+}
