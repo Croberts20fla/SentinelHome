@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+venv/
+.venv/
+
+# VS Code
+.vscode/
+
+# Runtime logs
+logs/
+*.log
+*.jsonl
+
+# Private configuration
+trusted_devices.json
+
+# Environment variables
+.env
+
+# Operating System
+.DS_Store
+Thumbs.db
