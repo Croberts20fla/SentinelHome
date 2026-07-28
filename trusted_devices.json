@@ -29,14 +29,19 @@
     },
     "06:01:6C:3E:3D:D7": {
         "name": "Iphone Chris",
-        "vendor": "Unknown"
+        "vendor": "Family"
     },
     "72:B2:69:5A:15:34": {
         "name": "Maegan's Iphone",
-        "vendor": "Unknown"
+        "vendor": "Family"
     },
     "5A:A9:96:C0:7C:F3": {
         "name": "Arielle's Iphone",
-        "vendor": "Unknown"
+        "vendor": "Family"
+    },
+    "6A:03:7C:7E:51:04": {
+    "name": "Marissa's iPhone",
+    "vendor": "Apple",
+    "owner": "Family"
     }
 }

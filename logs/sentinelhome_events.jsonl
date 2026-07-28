@@ -8,3 +8,27 @@
 {"timestamp": "2026-07-28T17:04:30-04:00", "event_type": "unknown_device_detected", "device": {"ip": "192.168.1.58", "hostname": "Unknown", "mac": "A6:57:60:21:14:6F", "vendor": "Unknown"}}
 {"timestamp": "2026-07-28T17:05:40-04:00", "event_type": "unknown_device_detected", "device": {"ip": "192.168.1.58", "hostname": "Unknown", "mac": "A6:57:60:21:14:6F", "vendor": "Unknown"}}
 {"timestamp": "2026-07-28T17:09:19-04:00", "event_type": "unknown_device_detected", "device": {"ip": "192.168.1.159", "hostname": "iPhone-14.lan", "mac": "6A:03:7C:7E:51:04", "vendor": "Unknown"}}
+{"timestamp": "2026-07-28T17:14:21-04:00", "event_type": "unknown_device_detected", "device": {"ip": "192.168.1.176", "hostname": "DESKTOP-UJOTS4V.lan", "mac": "UNKNOWN", "vendor": "Unknown"}}
+{"timestamp": "2026-07-28T17:14:21-04:00", "event_type": "unknown_device_detected", "device": {"ip": "192.168.1.58", "hostname": "Unknown", "mac": "A6:57:60:21:14:6F", "vendor": "Unknown"}}
+{"timestamp": "2026-07-28T17:33:21-04:00", "event_type": "unknown_device_detected", "device": {"ip": "192.168.1.176", "hostname": "DESKTOP-UJOTS4V.lan", "mac": "UNKNOWN", "vendor": "Unknown"}}
+{"timestamp": "2026-07-28T17:33:21-04:00", "event_type": "unknown_device_detected", "device": {"ip": "192.168.1.58", "hostname": "Unknown", "mac": "A6:57:60:21:14:6F", "vendor": "Unknown"}}
+{"timestamp": "2026-07-28T17:34:31-04:00", "event_type": "unknown_device_detected", "device": {"ip": "192.168.1.159", "hostname": "iPhone-14.lan", "mac": "6A:03:7C:7E:51:04", "vendor": "Unknown"}}
+{"timestamp": "2026-07-28T17:35:40-04:00", "event_type": "unknown_device_detected", "device": {"ip": "192.168.1.159", "hostname": "iPhone-14.lan", "mac": "6A:03:7C:7E:51:04", "vendor": "Unknown"}}
+{"timestamp": "2026-07-28T17:37:23-04:00", "event_type": "unknown_device_detected", "device": {"ip": "192.168.1.159", "hostname": "iPhone-14.lan", "mac": "6A:03:7C:7E:51:04", "vendor": "Unknown"}}
+{"timestamp": "2026-07-28T17:42:22-04:00", "event_type": "unknown_device_detected", "device": {"ip": "192.168.1.159", "hostname": "iPhone-14.lan", "mac": "6A:03:7C:7E:51:04", "vendor": "Unknown"}}
+{"timestamp": "2026-07-28T17:43:29-04:00", "event_type": "unknown_device_detected", "device": {"ip": "192.168.1.159", "hostname": "iPhone-14.lan", "mac": "6A:03:7C:7E:51:04", "vendor": "Unknown"}}
+{"timestamp": "2026-07-28T17:50:37-04:00", "event_type": "unknown_device_detected", "device": {"ip": "192.168.1.1", "hostname": "osync.lan", "mac": "F4:05:95:A2:AD:36", "vendor": "Sagemcom Broadband SAS"}}
+{"timestamp": "2026-07-28T17:50:37-04:00", "event_type": "unknown_device_detected", "device": {"ip": "192.168.1.107", "hostname": "amazon-4b62c181399d93d2.lan", "mac": "F0:2F:9E:65:E1:93", "vendor": "Amazon Technologies"}}
+{"timestamp": "2026-07-28T17:50:37-04:00", "event_type": "unknown_device_detected", "device": {"ip": "192.168.1.128", "hostname": "LGwebOSTV.lan", "mac": "64:CB:E9:D8:25:62", "vendor": "LG Innotek"}}
+{"timestamp": "2026-07-28T17:50:37-04:00", "event_type": "unknown_device_detected", "device": {"ip": "192.168.1.176", "hostname": "DESKTOP-UJOTS4V.lan", "mac": "UNKNOWN", "vendor": "Unknown"}}
+{"timestamp": "2026-07-28T17:50:37-04:00", "event_type": "unknown_device_detected", "device": {"ip": "192.168.1.203", "hostname": "Unknown", "mac": "06:01:6C:3E:3D:D7", "vendor": "Unknown"}}
+{"timestamp": "2026-07-28T17:50:37-04:00", "event_type": "unknown_device_detected", "device": {"ip": "192.168.1.41", "hostname": "DESKTOP-859KS89.lan", "mac": "44:38:E8:91:6D:6A", "vendor": "Intel Corporate"}}
+{"timestamp": "2026-07-28T17:50:37-04:00", "event_type": "unknown_device_detected", "device": {"ip": "192.168.1.58", "hostname": "Unknown", "mac": "A6:57:60:21:14:6F", "vendor": "Unknown"}}
+{"timestamp": "2026-07-28T17:50:37-04:00", "event_type": "unknown_device_detected", "device": {"ip": "192.168.1.68", "hostname": "iPhone.lan", "mac": "72:B2:69:5A:15:34", "vendor": "Unknown"}}
+{"timestamp": "2026-07-28T17:50:37-04:00", "event_type": "unknown_device_detected", "device": {"ip": "192.168.1.73", "hostname": "Blink-Device.lan", "mac": "F0:2F:9E:F9:A7:CE", "vendor": "Amazon Technologies"}}
+{"timestamp": "2026-07-28T17:50:37-04:00", "event_type": "unknown_device_detected", "device": {"ip": "192.168.1.91", "hostname": "Unknown", "mac": "B8:AB:62:4E:A4:BE", "vendor": "Hui Zhou Gaoshengda Technology"}}
+{"timestamp": "2026-07-28T17:50:37-04:00", "event_type": "unknown_device_detected", "device": {"ip": "192.168.1.94", "hostname": "amazon-571e80d7102eac76.lan", "mac": "08:C2:24:95:59:58", "vendor": "Amazon Technologies"}}
+{"timestamp": "2026-07-28T17:52:57-04:00", "event_type": "unknown_device_detected", "device": {"ip": "192.168.1.48", "hostname": "Unknown", "mac": "5A:A9:96:C0:7C:F3", "vendor": "Unknown"}}
+{"timestamp": "2026-07-28T17:54:05-04:00", "event_type": "unknown_device_detected", "device": {"ip": "192.168.1.159", "hostname": "iPhone-14.lan", "mac": "6A:03:7C:7E:51:04", "vendor": "Unknown"}}
+{"timestamp": "2026-07-28T17:55:12-04:00", "event_type": "unknown_device_detected", "device": {"ip": "192.168.1.176", "hostname": "DESKTOP-UJOTS4V.lan", "mac": "UNKNOWN", "vendor": "Unknown"}}
+{"timestamp": "2026-07-28T17:55:12-04:00", "event_type": "unknown_device_detected", "device": {"ip": "192.168.1.58", "hostname": "Unknown", "mac": "A6:57:60:21:14:6F", "vendor": "Unknown"}}
