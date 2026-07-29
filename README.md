@@ -98,7 +98,7 @@ SentinelHome/
 
 ### SentinelHome Dashboard
 
-> *(Add a screenshot here once available.)*
+![SentinelHome Dashboard](screenshots/dashboard.png)
 
 ### Live Device Inventory
 
