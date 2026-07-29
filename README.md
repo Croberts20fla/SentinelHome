@@ -102,7 +102,7 @@ SentinelHome/
 
 ### Live Device Inventory
 
-> *(Add a screenshot of the console inventory here.)*
+![Live Device Inventory](screenshots/live_inventory.png)
 
 ---
 
