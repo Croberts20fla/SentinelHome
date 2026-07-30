@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="refresh" content="30">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SentinelHome Dashboard</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+</head>
+
+<body>
+    <main class="dashboard-shell">
+        <header class="top-bar">
+            <div>
+                <p class="eyebrow">HOME NETWORK SECURITY</p>
+                <h1>SentinelHome</h1>
+                <p class="subtitle">
+                    Real-time device monitoring and security event visibility
+                </p>
+            </div>
+
+            <div class="status-panel">
+                <span class="status-dot"></span>
+                <div>
+                    <p class="status-label">System Status</p>
+                    <p class="status-value">{{ monitoring_status }}</p>
+                </div>
+            </div>
+        </header>
+
+        <section class="metrics-grid">
+            <article class="metric-card">
+                <p class="metric-label">Devices Online</p>
+                <p class="metric-value">{{ devices_online }}</p>
+                <p class="metric-subtext">Current network inventory</p>
+            </article>
+
+            <article class="metric-card">
+                <p class="metric-label">Trusted Devices</p>
+                <p class="metric-value trusted">
+                    {{ trusted_online }}
+                </p>
+                <p class="metric-subtext">
+                    {{ trusted_count }} approved devices stored
+                </p>
+            </article>
+
+            <article class="metric-card">
+                <p class="metric-label">Unknown Devices</p>
+                <p class="metric-value danger">
+                    {{ unknown_online }}
+                </p>
+                <p class="metric-subtext">
+                    {{ unknown_alert_count }} historical alerts
+                </p>
+            </article>
+
+            <article class="metric-card">
+                <p class="metric-label">Security Events</p>
+                <p class="metric-value">{{ total_events }}</p>
+                <p class="metric-subtext">
+                    Last activity: {{ last_activity }}
+                </p>
+            </article>
+        </section>
+
+        <section class="content-grid">
+            <article class="panel alert-panel">
+                <div class="panel-heading">
+                    <div>
+                        <p class="panel-eyebrow">PRIORITY</p>
+                        <h2>Latest Unknown Device</h2>
+                    </div>
+                </div>
+
+                {% if latest_unknown %}
+                <div class="latest-alert">
+                    <div class="alert-icon">!</div>
+
+                    <div class="alert-details">
+                        <p class="alert-title">
+                            Unknown device detected
+                        </p>
+
+                        <div class="detail-grid">
+                            <div>
+                                <span>Hostname</span>
+                                <strong>
+                                    {{ latest_unknown.hostname }}
+                                </strong>
+                            </div>
+
+                            <div>
+                                <span>IP Address</span>
+                                <strong>
+                                    {{ latest_unknown.ip }}
+                                </strong>
+                            </div>
+
+                            <div>
+                                <span>MAC Address</span>
+                                <strong>
+                                    {{ latest_unknown.mac }}
+                                </strong>
+                            </div>
+
+                            <div>
+                                <span>Detected</span>
+                                <strong>
+                                    {{ latest_unknown.display_time }}
+                                </strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="healthy-state">
+                    <div class="healthy-icon">✓</div>
+                    <div>
+                        <p class="healthy-title">
+                            No unknown devices detected
+                        </p>
+                        <p>
+                            Your current network activity has no recorded
+                            unknown-device alerts.
+                        </p>
+                    </div>
+                </div>
+                {% endif %}
+            </article>
+
+            <article class="panel overview-panel">
+                <div class="panel-heading">
+                    <div>
+                        <p class="panel-eyebrow">OVERVIEW</p>
+                        <h2>Monitoring Summary</h2>
+                    </div>
+                </div>
+
+                <div class="summary-list">
+                    <div class="summary-row">
+                        <span>Trusted inventory loaded</span>
+                        <strong>{{ trusted_count }}</strong>
+                    </div>
+
+                    <div class="summary-row">
+                        <span>Unknown alerts logged</span>
+                        <strong>{{ unknown_alert_count }}</strong>
+                    </div>
+
+                    <div class="summary-row">
+                        <span>Total events recorded</span>
+                        <strong>{{ total_events }}</strong>
+                    </div>
+
+                    <div class="summary-row">
+                        <span>Auto refresh</span>
+                        <strong>30 seconds</strong>
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        <section class="panel">
+            <div class="panel-heading">
+                <div>
+                    <p class="panel-eyebrow">ACTIVITY</p>
+                    <h2>Recent Security Events</h2>
+                </div>
+
+                <p class="panel-note">
+                    Most recent 10 logged events
+                </p>
+            </div>
+
+            {% if recent_events %}
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Event</th>
+                            <th>Hostname</th>
+                            <th>IP Address</th>
+                            <th>MAC Address</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for event in recent_events %}
+                        <tr>
+                            <td>{{ event.display_time }}</td>
+
+                            <td>
+                                <span class="event-badge">
+                                    {{ event.event_type }}
+                                </span>
+                            </td>
+
+                            <td>{{ event.hostname }}</td>
+                            <td>{{ event.ip }}</td>
+                            <td class="monospace">{{ event.mac }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                No security events have been recorded yet.
+            </div>
+            {% endif %}
+        </section>
+
+        <section class="panel">
+            <div class="panel-heading">
+                <div>
+                    <p class="panel-eyebrow">ASSETS</p>
+                    <h2>Live Device Inventory</h2>
+                </div>
+
+                <p class="panel-note">
+                    Current devices reported by SentinelHome
+                </p>
+            </div>
+
+            {% if live_inventory %}
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Device</th>
+                            <th>Hostname</th>
+                            <th>IP Address</th>
+                            <th>MAC Address</th>
+                            <th>Vendor</th>
+                            <th>Trust</th>
+                            <th>Status</th>
+                            <th>Last Seen</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for device in live_inventory %}
+                        <tr>
+                            <td>
+                                <strong>{{ device.name }}</strong>
+                            </td>
+
+                            <td>{{ device.hostname }}</td>
+                            <td>{{ device.ip }}</td>
+                            <td class="monospace">{{ device.mac }}</td>
+                            <td>{{ device.vendor }}</td>
+
+                            <td>
+                                {% if device.trusted %}
+                                <span class="trust-badge trusted-badge">
+                                    Trusted
+                                </span>
+                                {% else %}
+                                <span class="trust-badge unknown-badge">
+                                    Unknown
+                                </span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                <span class="online-status">
+                                    <span class="online-dot"></span>
+                                    {{ device.status }}
+                                </span>
+                            </td>
+
+                            <td>{{ device.last_seen }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                No live inventory has been generated yet. Run a
+                SentinelHome network scan to create the inventory.
+            </div>
+            {% endif %}
+        </section>
+
+        <footer>
+            SentinelHome Security Monitor
+        </footer>
+    </main>
+</body>
+</html>

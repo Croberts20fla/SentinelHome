@@ -8,6 +8,7 @@ from rich.table import Table
 
 from modules.event_logger import log_event
 from modules.inventory import device_key, is_trusted, load_trusted_devices
+from modules.live_inventory import save_live_inventory
 from modules.notifier import notify_unknown_device
 from modules.scanner import scan_network
 
@@ -18,11 +19,15 @@ SCAN_INTERVAL_SECONDS = 30
 PROJECT_DIR = Path(__file__).resolve().parent
 TRUSTED_FILE = PROJECT_DIR / "trusted_devices.json"
 LOG_FILE = PROJECT_DIR / "logs" / "sentinelhome_events.jsonl"
+LIVE_INVENTORY_FILE = PROJECT_DIR / "live_inventory.json"
 
 console = Console()
 
 
-def display_devices(devices: list[dict[str, str]], trusted: dict) -> None:
+def display_devices(
+    devices: list[dict[str, str]],
+    trusted: dict,
+) -> None:
     """Display the current device inventory."""
     table = Table(title="SentinelHome Live Device Inventory")
 
@@ -38,7 +43,10 @@ def display_devices(devices: list[dict[str, str]], trusted: dict) -> None:
 
         if is_trusted(device, trusted):
             status = "[green]TRUSTED[/green]"
-            device_name = trusted[mac].get("name", device["hostname"])
+            device_name = trusted[mac].get(
+                "name",
+                device["hostname"],
+            )
         else:
             status = "[bold red]UNKNOWN[/bold red]"
             device_name = "Unapproved"
@@ -56,12 +64,17 @@ def display_devices(devices: list[dict[str, str]], trusted: dict) -> None:
 
 
 def main() -> None:
-    console.print("[bold cyan]SentinelHome Live Monitor[/bold cyan]")
+    """Run the continuous SentinelHome network monitor."""
+    console.print(
+        "[bold cyan]SentinelHome Live Monitor[/bold cyan]"
+    )
     console.print(
         f"Scanning [bold]{NETWORK}[/bold] every "
         f"[bold]{SCAN_INTERVAL_SECONDS} seconds[/bold]."
     )
-    console.print("Press [bold]Ctrl + C[/bold] to stop.\n")
+    console.print(
+        "Press [bold]Ctrl + C[/bold] to stop.\n"
+    )
 
     trusted_devices = load_trusted_devices(TRUSTED_FILE)
 
@@ -71,13 +84,31 @@ def main() -> None:
     while True:
         try:
             devices = scan_network(NETWORK)
+
+            # Reload trusted devices every scan so new approvals
+            # take effect without restarting SentinelHome.
+            trusted_devices = load_trusted_devices(
+                TRUSTED_FILE
+            )
+
+            save_live_inventory(
+                LIVE_INVENTORY_FILE,
+                devices,
+            )
+
             console.clear()
-            display_devices(devices, trusted_devices)
+            display_devices(
+                devices,
+                trusted_devices,
+            )
 
             current_unknown_keys: set[str] = set()
 
             for device in devices:
-                if is_trusted(device, trusted_devices):
+                if is_trusted(
+                    device,
+                    trusted_devices,
+                ):
                     continue
 
                 key = device_key(device)
@@ -85,7 +116,9 @@ def main() -> None:
 
                 if key not in alerted_unknown_devices:
                     console.print(
-                        "\n[bold red]UNKNOWN DEVICE DETECTED[/bold red]\n"
+                        "\n[bold red]"
+                        "UNKNOWN DEVICE DETECTED"
+                        "[/bold red]\n"
                         f"Hostname: {device['hostname']}\n"
                         f"IP: {device['ip']}\n"
                         f"MAC: {device['mac']}\n"
@@ -93,26 +126,47 @@ def main() -> None:
                     )
 
                     notify_unknown_device(device)
-                    log_event(LOG_FILE, "unknown_device_detected", device)
+
+                    log_event(
+                        LOG_FILE,
+                        "unknown_device_detected",
+                        device,
+                    )
+
                     alerted_unknown_devices.add(key)
 
-            # If an unknown device disconnects, remove it from the session
-            # alert set. A later reconnection will trigger a fresh alert.
-            alerted_unknown_devices.intersection_update(current_unknown_keys)
+            # If an unknown device disconnects, remove it from the
+            # session alert set. A later reconnection triggers a new alert.
+            alerted_unknown_devices.intersection_update(
+                current_unknown_keys
+            )
 
             console.print(
-                f"\nNext scan in {SCAN_INTERVAL_SECONDS} seconds. "
+                f"\nNext scan in "
+                f"{SCAN_INTERVAL_SECONDS} seconds. "
                 "Press Ctrl + C to stop."
             )
+
             time.sleep(SCAN_INTERVAL_SECONDS)
 
         except KeyboardInterrupt:
-            console.print("\n[yellow]SentinelHome monitoring stopped.[/yellow]")
+            console.print(
+                "\n[yellow]"
+                "SentinelHome monitoring stopped."
+                "[/yellow]"
+            )
             break
 
         except Exception as error:
-            console.print(f"\n[bold red]Monitoring error:[/bold red] {error}")
-            console.print("Retrying in 30 seconds...")
+            console.print(
+                "\n[bold red]"
+                "Monitoring error:"
+                f"[/bold red] {error}"
+            )
+            console.print(
+                f"Retrying in "
+                f"{SCAN_INTERVAL_SECONDS} seconds..."
+            )
             time.sleep(SCAN_INTERVAL_SECONDS)
 
 

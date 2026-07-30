@@ -1,80 +1,53 @@
-from flask import Flask, render_template_string
+"""Flask dashboard for SentinelHome."""
+
+from flask import Flask, render_template, redirect, url_for
+
+from modules.dashboard_data import build_dashboard_data
+from modules.trusted_manager import approve_device
+
+from pathlib import Path
 
 app = Flask(__name__)
 
-HTML = """
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="30">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>SentinelHome Dashboard</title>
-
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #111827;
-            color: white;
-            margin: 0;
-            padding: 30px;
-        }
-
-        h1 {
-            color: #60a5fa;
-        }
-
-        .card {
-            background: #1f2937;
-            border-radius: 12px;
-            padding: 20px;
-            margin: 15px 0;
-        }
-
-        .status {
-            color: #34d399;
-            font-size: 24px;
-            font-weight: bold;
-        }
-
-        .muted {
-            color: #9ca3af;
-        }
-    </style>
-</head>
-
-<body>
-    <h1>SentinelHome</h1>
-
-    <div class="card">
-        <div class="status">Network Status: Monitoring</div>
-        <p class="muted">This dashboard refreshes every 30 seconds.</p>
-    </div>
-
-    <div class="card">
-        <h2>Current Monitoring</h2>
-        <p>Trusted devices are being monitored.</p>
-        <p>Unknown devices trigger desktop alerts.</p>
-        <p>Event logging is enabled.</p>
-    </div>
-
-    <div class="card">
-        <h2>Planned Features</h2>
-        <p>Live device inventory</p>
-        <p>Approve or deny unknown devices</p>
-        <p>Email and phone notifications</p>
-        <p>Wazuh integration</p>
-    </div>
-</body>
-</html>
-"""
+PROJECT_DIR = Path(__file__).resolve().parent
+TRUSTED_FILE = PROJECT_DIR / "trusted_devices.json"
 
 
 @app.route("/")
 def home():
-    return render_template_string(HTML)
+    """Display the SentinelHome security dashboard."""
+    dashboard_data = build_dashboard_data()
 
+    return render_template(
+        "dashboard.html",
+        **dashboard_data,
+    )
+
+@app.route("/approve/<mac>")
+def approve(mac):
+    """
+    Approve a device from the dashboard.
+    """
+
+    dashboard_data = build_dashboard_data()
+
+    for device in dashboard_data["live_inventory"]:
+        if device["mac"] == mac:
+
+            approve_device(
+                TRUSTED_FILE,
+                device,
+                name=device["device_name"],
+                owner="Chris",
+            )
+
+            break
+
+    return redirect(url_for("home"))
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5000, debug=True)
+    app.run(
+        host="127.0.0.1",
+        port=5000,
+        debug=True,
+    )
