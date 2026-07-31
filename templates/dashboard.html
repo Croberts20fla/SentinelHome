@@ -242,6 +242,7 @@
                             <th>Trust</th>
                             <th>Status</th>
                             <th>Last Seen</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
 
@@ -277,7 +278,29 @@
                             </td>
 
                             <td>{{ device.last_seen }}</td>
-                        </tr>
+
+                            <td>
+
+                                {% if device.trusted %}
+
+                                <a href="{{ url_for('remove', mac=device.mac) }}"
+                                    class="remove-button">
+                                     Remove
+                                </a>
+
+                                {% else %}
+
+                                <a href="{{ url_for('approve', mac=device.mac) }}"
+                                    class="approve-button">
+                                     Approve
+                                </a>
+
+                                {% endif %}
+
+                            </td>
+
+                            </tr>
+                        
                         {% endfor %}
                     </tbody>
                 </table>

@@ -1,11 +1,14 @@
 """Flask dashboard for SentinelHome."""
 
-from flask import Flask, render_template, redirect, url_for
+from pathlib import Path
+
+from flask import Flask, redirect, render_template, url_for
 
 from modules.dashboard_data import build_dashboard_data
-from modules.trusted_manager import approve_device
-
-from pathlib import Path
+from modules.trusted_manager import (
+    approve_device,
+    remove_trusted_device,
+)
 
 app = Flask(__name__)
 
@@ -15,7 +18,7 @@ TRUSTED_FILE = PROJECT_DIR / "trusted_devices.json"
 
 @app.route("/")
 def home():
-    """Display the SentinelHome security dashboard."""
+    """Display the SentinelHome dashboard."""
     dashboard_data = build_dashboard_data()
 
     return render_template(
@@ -23,27 +26,41 @@ def home():
         **dashboard_data,
     )
 
-@app.route("/approve/<mac>")
+
+@app.route("/approve/<path:mac>")
 def approve(mac):
-    """
-    Approve a device from the dashboard.
-    """
+    """Approve a device."""
 
     dashboard_data = build_dashboard_data()
 
     for device in dashboard_data["live_inventory"]:
-        if device["mac"] == mac:
 
-            approve_device(
-                TRUSTED_FILE,
-                device,
-                name=device["device_name"],
-                owner="Chris",
-            )
+        if device["mac"].upper() != mac.upper():
+            continue
 
-            break
+        approve_device(
+            TRUSTED_FILE,
+            device=device,
+            name=device["name"],
+            owner="Chris",
+        )
+
+        break
 
     return redirect(url_for("home"))
+
+
+@app.route("/remove/<path:mac>")
+def remove(mac):
+    """Remove a trusted device."""
+
+    remove_trusted_device(
+        TRUSTED_FILE,
+        mac,
+    )
+
+    return redirect(url_for("home"))
+
 
 if __name__ == "__main__":
     app.run(
