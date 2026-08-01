@@ -1,4 +1,6 @@
-﻿from __future__ import annotations
+﻿"""SentinelHome live network monitor."""
+
+from __future__ import annotations
 
 import time
 from pathlib import Path
@@ -6,8 +8,17 @@ from pathlib import Path
 from rich.console import Console
 from rich.table import Table
 
+from modules.database import (
+    initialize_database,
+    record_device_event,
+    upsert_device,
+)
 from modules.event_logger import log_event
-from modules.inventory import device_key, is_trusted, load_trusted_devices
+from modules.inventory import (
+    device_key,
+    is_trusted,
+    load_trusted_devices,
+)
 from modules.live_inventory import save_live_inventory
 from modules.notifier import notify_unknown_device
 from modules.scanner import scan_network
@@ -17,19 +28,34 @@ NETWORK = "192.168.1.0/24"
 SCAN_INTERVAL_SECONDS = 30
 
 PROJECT_DIR = Path(__file__).resolve().parent
+
 TRUSTED_FILE = PROJECT_DIR / "trusted_devices.json"
-LOG_FILE = PROJECT_DIR / "logs" / "sentinelhome_events.jsonl"
-LIVE_INVENTORY_FILE = PROJECT_DIR / "live_inventory.json"
+LOG_FILE = (
+    PROJECT_DIR
+    / "logs"
+    / "sentinelhome_events.jsonl"
+)
+LIVE_INVENTORY_FILE = (
+    PROJECT_DIR
+    / "live_inventory.json"
+)
+DATABASE_FILE = (
+    PROJECT_DIR
+    / "data"
+    / "sentinelhome.db"
+)
 
 console = Console()
 
 
 def display_devices(
     devices: list[dict[str, str]],
-    trusted: dict,
+    trusted_devices: dict,
 ) -> None:
-    """Display the current device inventory."""
-    table = Table(title="SentinelHome Live Device Inventory")
+    """Display the current network inventory."""
+    table = Table(
+        title="SentinelHome Live Device Inventory"
+    )
 
     table.add_column("Status")
     table.add_column("Device Name")
@@ -41,9 +67,15 @@ def display_devices(
     for device in devices:
         mac = device["mac"]
 
-        if is_trusted(device, trusted):
+        if is_trusted(device, trusted_devices):
             status = "[green]TRUSTED[/green]"
-            device_name = trusted[mac].get(
+
+            trusted_record = trusted_devices.get(
+                mac,
+                {},
+            )
+
+            device_name = trusted_record.get(
                 "name",
                 device["hostname"],
             )
@@ -63,30 +95,89 @@ def display_devices(
     console.print(table)
 
 
+def save_devices_to_database(
+    devices: list[dict[str, str]],
+    trusted_devices: dict,
+) -> None:
+    """Save the current scan into SQLite."""
+    for device in devices:
+        mac = device["mac"]
+
+        trusted = is_trusted(
+            device,
+            trusted_devices,
+        )
+
+        trusted_record = trusted_devices.get(
+            mac,
+            {},
+        )
+
+        if trusted:
+            device_name = trusted_record.get(
+                "name",
+                device["hostname"],
+            )
+
+            owner = trusted_record.get(
+                "owner",
+                "Unknown",
+            )
+        else:
+            device_name = device["hostname"]
+            owner = "Unknown"
+
+        database_device = {
+            **device,
+            "status": "Online",
+        }
+
+        database_key, is_new_device = upsert_device(
+            DATABASE_FILE,
+            database_device,
+            trusted=trusted,
+            name=device_name,
+            owner=owner,
+        )
+
+        if is_new_device:
+            record_device_event(
+                DATABASE_FILE,
+                database_key,
+                "device_discovered",
+                {
+                    "ip": device["ip"],
+                    "hostname": device["hostname"],
+                    "mac": device["mac"],
+                    "vendor": device["vendor"],
+                    "trusted": trusted,
+                },
+            )
+
+
 def main() -> None:
-    """Run the continuous SentinelHome network monitor."""
+    """Start SentinelHome network monitoring."""
+    initialize_database(DATABASE_FILE)
+
     console.print(
         "[bold cyan]SentinelHome Live Monitor[/bold cyan]"
     )
+
     console.print(
         f"Scanning [bold]{NETWORK}[/bold] every "
         f"[bold]{SCAN_INTERVAL_SECONDS} seconds[/bold]."
     )
+
     console.print(
         "Press [bold]Ctrl + C[/bold] to stop.\n"
     )
 
-    trusted_devices = load_trusted_devices(TRUSTED_FILE)
-
-    # Prevents the same unknown device from triggering every 30 seconds.
     alerted_unknown_devices: set[str] = set()
 
     while True:
         try:
             devices = scan_network(NETWORK)
 
-            # Reload trusted devices every scan so new approvals
-            # take effect without restarting SentinelHome.
             trusted_devices = load_trusted_devices(
                 TRUSTED_FILE
             )
@@ -96,7 +187,13 @@ def main() -> None:
                 devices,
             )
 
+            save_devices_to_database(
+                devices,
+                trusted_devices,
+            )
+
             console.clear()
+
             display_devices(
                 devices,
                 trusted_devices,
@@ -114,29 +211,52 @@ def main() -> None:
                 key = device_key(device)
                 current_unknown_keys.add(key)
 
-                if key not in alerted_unknown_devices:
-                    console.print(
-                        "\n[bold red]"
-                        "UNKNOWN DEVICE DETECTED"
-                        "[/bold red]\n"
-                        f"Hostname: {device['hostname']}\n"
-                        f"IP: {device['ip']}\n"
-                        f"MAC: {device['mac']}\n"
-                        f"Vendor: {device['vendor']}\n"
-                    )
+                if key in alerted_unknown_devices:
+                    continue
 
-                    notify_unknown_device(device)
+                console.print(
+                    "\n[bold red]"
+                    "UNKNOWN DEVICE DETECTED"
+                    "[/bold red]\n"
+                    f"Hostname: {device['hostname']}\n"
+                    f"IP: {device['ip']}\n"
+                    f"MAC: {device['mac']}\n"
+                    f"Vendor: {device['vendor']}\n"
+                )
 
-                    log_event(
-                        LOG_FILE,
-                        "unknown_device_detected",
-                        device,
-                    )
+                notify_unknown_device(device)
 
-                    alerted_unknown_devices.add(key)
+                log_event(
+                    LOG_FILE,
+                    "unknown_device_detected",
+                    device,
+                )
 
-            # If an unknown device disconnects, remove it from the
-            # session alert set. A later reconnection triggers a new alert.
+                database_key, _ = upsert_device(
+                    DATABASE_FILE,
+                    {
+                        **device,
+                        "status": "Online",
+                    },
+                    trusted=False,
+                    name=device["hostname"],
+                    owner="Unknown",
+                )
+
+                record_device_event(
+                    DATABASE_FILE,
+                    database_key,
+                    "unknown_device_detected",
+                    {
+                        "ip": device["ip"],
+                        "hostname": device["hostname"],
+                        "mac": device["mac"],
+                        "vendor": device["vendor"],
+                    },
+                )
+
+                alerted_unknown_devices.add(key)
+
             alerted_unknown_devices.intersection_update(
                 current_unknown_keys
             )
@@ -159,14 +279,15 @@ def main() -> None:
 
         except Exception as error:
             console.print(
-                "\n[bold red]"
-                "Monitoring error:"
+                "\n[bold red]Monitoring error:"
                 f"[/bold red] {error}"
             )
+
             console.print(
                 f"Retrying in "
                 f"{SCAN_INTERVAL_SECONDS} seconds..."
             )
+
             time.sleep(SCAN_INTERVAL_SECONDS)
 
 

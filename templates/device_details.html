@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{{ device.name }} | SentinelHome</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+</head>
+
+<body>
+    <main class="dashboard-shell">
+        <header class="top-bar">
+            <div>
+                <p class="eyebrow">DEVICE PROFILE</p>
+                <h1>{{ device.name }}</h1>
+                <p class="subtitle">
+                    SentinelHome asset details and recent activity
+                </p>
+            </div>
+
+            <a
+                href="{{ url_for('home') }}"
+                class="back-button"
+            >
+                Back to Dashboard
+            </a>
+        </header>
+
+        <section class="device-profile-grid">
+            <article class="panel device-profile-card">
+                <div class="panel-heading">
+                    <div>
+                        <p class="panel-eyebrow">IDENTITY</p>
+                        <h2>Device Information</h2>
+                    </div>
+
+                    {% if device.trusted %}
+                    <span class="trust-badge trusted-badge">
+                        Trusted
+                    </span>
+                    {% else %}
+                    <span class="trust-badge unknown-badge">
+                        Unknown
+                    </span>
+                    {% endif %}
+                </div>
+
+                <div class="device-detail-list">
+                    <div class="device-detail-row">
+                        <span>Device Name</span>
+                        <strong>{{ device.name }}</strong>
+                    </div>
+
+                    <div class="device-detail-row">
+                        <span>Hostname</span>
+                        <strong>{{ device.hostname }}</strong>
+                    </div>
+
+                    <div class="device-detail-row">
+                        <span>IP Address</span>
+                        <strong>{{ device.ip }}</strong>
+                    </div>
+
+                    <div class="device-detail-row">
+                        <span>MAC Address</span>
+                        <strong class="monospace">
+                            {{ device.mac }}
+                        </strong>
+                    </div>
+
+                    <div class="device-detail-row">
+                        <span>Vendor</span>
+                        <strong>{{ device.vendor }}</strong>
+                    </div>
+
+                    <div class="device-detail-row">
+                        <span>Status</span>
+
+                        <strong class="online-status">
+                            <span class="online-dot"></span>
+                            {{ device.status }}
+                        </strong>
+                    </div>
+
+                    <div class="device-detail-row">
+                        <span>Last Seen</span>
+                        <strong>{{ device.last_seen }}</strong>
+                    </div>
+                </div>
+            </article>
+
+            <article class="panel device-actions-card">
+                <div class="panel-heading">
+                    <div>
+                        <p class="panel-eyebrow">MANAGEMENT</p>
+                        <h2>Device Actions</h2>
+                    </div>
+                </div>
+
+                {% if device.trusted %}
+                <form
+                    action="{{ url_for('rename', mac=device.mac) }}"
+                    method="post"
+                    class="details-rename-form"
+                >
+                    <label for="new_name">
+                        Rename Device
+                    </label>
+
+                    <input
+                        id="new_name"
+                        type="text"
+                        name="new_name"
+                        value="{{ device.name }}"
+                        class="details-input"
+                        required
+                    >
+
+                    <button
+                        type="submit"
+                        class="rename-button details-action-button"
+                    >
+                        Save New Name
+                    </button>
+                </form>
+
+                <a
+                    href="{{ url_for('remove', mac=device.mac) }}"
+                    class="remove-button details-action-button"
+                >
+                    Remove from Trusted Devices
+                </a>
+                {% else %}
+                    {% if device.mac != "UNKNOWN" %}
+                    <a
+                        href="{{ url_for('approve', mac=device.mac) }}"
+                        class="approve-button details-action-button"
+                    >
+                        Approve Device
+                    </a>
+                    {% else %}
+                    <div class="action-warning">
+                        This device cannot be approved yet because
+                        SentinelHome has not identified a MAC address.
+                    </div>
+                    {% endif %}
+                {% endif %}
+
+                <form
+                    action="{{ url_for('scan_ports', ip_address=device.ip) }}"
+                    method="post"
+                >
+                    <button
+                        type="submit"
+                        class="scan-button details-action-button"
+                    >
+                        Run Port Scan
+                    </button>
+                </form>
+            </article>
+        </section>
+
+        <section class="panel">
+            <div class="panel-heading">
+                <div>
+                    <p class="panel-eyebrow">NETWORK EXPOSURE</p>
+                    <h2>Open Ports and Services</h2>
+                </div>
+
+                {% if port_scan %}
+                <p class="panel-note">
+                    Last scanned: {{ port_scan.scanned_at }}
+                </p>
+                {% endif %}
+            </div>
+
+            {% if port_scan %}
+                {% if port_scan.open_ports %}
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Port</th>
+                                <th>Protocol</th>
+                                <th>Service</th>
+                                <th>Product</th>
+                                <th>Version</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for port in port_scan.open_ports %}
+                            <tr>
+                                <td>
+                                    <span class="port-badge">
+                                        {{ port.port }}
+                                    </span>
+                                </td>
+
+                                <td>{{ port.protocol }}</td>
+                                <td>{{ port.service }}</td>
+                                <td>{{ port.product }}</td>
+                                <td>{{ port.version }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="healthy-state">
+                    <div class="healthy-icon">✓</div>
+                    <div>
+                        <p class="healthy-title">
+                            No common TCP ports were found open
+                        </p>
+                        <p>
+                            The device responded, but none of the configured
+                            common ports were detected as open.
+                        </p>
+                    </div>
+                </div>
+                {% endif %}
+            {% else %}
+            <div class="empty-state">
+                No port scan has been completed for this device.
+            </div>
+            {% endif %}
+     </section>
+
+        <section class="panel">
+            <div class="panel-heading">
+                <div>
+                    <p class="panel-eyebrow">ACTIVITY</p>
+                    <h2>Recent Device Events</h2>
+                </div>
+
+                <p class="panel-note">
+                    Events associated with {{ device.ip }}
+                </p>
+            </div>
+
+            {% if related_events %}
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Event</th>
+                            <th>Hostname</th>
+                            <th>IP Address</th>
+                            <th>MAC Address</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for event in related_events %}
+                        <tr>
+                            <td>{{ event.display_time }}</td>
+
+                            <td>
+                                <span class="event-badge">
+                                    {{ event.event_type }}
+                                </span>
+                            </td>
+
+                            <td>{{ event.hostname }}</td>
+                            <td>{{ event.ip }}</td>
+
+                            <td class="monospace">
+                                {{ event.mac }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                No recent security events are associated with this device.
+            </div>
+            {% endif %}
+        </section>
+
+        <footer>
+            SentinelHome Security Monitor
+        </footer>
+    </main>
+</body>
+</html>

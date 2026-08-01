@@ -250,7 +250,12 @@
                         {% for device in live_inventory %}
                         <tr>
                             <td>
-                                <strong>{{ device.name }}</strong>
+                                <a
+                                    href="{{ url_for('device_details', ip_address=device.ip) }}"
+                                    class="device-link"
+                                >
+                                    {{ device.name }}
+                                </a>
                             </td>
 
                             <td>{{ device.hostname }}</td>
@@ -280,23 +285,49 @@
                             <td>{{ device.last_seen }}</td>
 
                             <td>
-
                                 {% if device.trusted %}
 
-                                <a href="{{ url_for('remove', mac=device.mac) }}"
-                                    class="remove-button">
-                                     Remove
-                                </a>
+                                <div class="device-actions">
+                                    <form
+                                        action="{{ url_for('rename', mac=device.mac) }}"
+                                        method="post"
+                                        class="rename-form"
+                                    >
+                                        <input
+                                            type="text"
+                                            name="new_name"
+                                            class="rename-input"
+                                            value="{{ device.name }}"
+                                            aria-label="New device name"
+                                            required
+                                        >
+
+                                        <button
+                                            type="submit"
+                                            class="rename-button"
+                                        >
+                                            Rename
+                                        </button>
+                                    </form>
+
+                                    <a
+                                        href="{{ url_for('remove', mac=device.mac) }}"
+                                        class="remove-button"
+                                    >
+                                        Remove
+                                    </a>
+                                </div>
 
                                 {% else %}
 
-                                <a href="{{ url_for('approve', mac=device.mac) }}"
-                                    class="approve-button">
-                                     Approve
+                                <a
+                                    href="{{ url_for('approve', mac=device.mac) }}"
+                                    class="approve-button"
+                                >
+                                    Approve
                                 </a>
 
                                 {% endif %}
-
                             </td>
 
                             </tr>

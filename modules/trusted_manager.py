@@ -90,6 +90,32 @@ def approve_device(
 
     return True
 
+def rename_trusted_device(
+    file_path: Path,
+    mac: str,
+    new_name: str,
+) -> bool:
+    """Rename a device in the trusted inventory."""
+    normalized_mac = mac.upper()
+    cleaned_name = new_name.strip()
+
+    if not cleaned_name:
+        return False
+
+    trusted_devices = load_trusted_devices(file_path)
+
+    if normalized_mac not in trusted_devices:
+        return False
+
+    trusted_devices[normalized_mac]["name"] = cleaned_name
+
+    save_trusted_devices(
+        file_path,
+        trusted_devices,
+    )
+
+    return True
+
 
 def remove_trusted_device(
     file_path: Path,
