@@ -235,53 +235,70 @@
         <section class="panel">
             <div class="panel-heading">
                 <div>
-                    <p class="panel-eyebrow">ACTIVITY</p>
-                    <h2>Recent Device Events</h2>
+                    <p class="panel-eyebrow">HISTORY</p>
+                    <h2>Device Timeline</h2>
                 </div>
 
                 <p class="panel-note">
-                    Events associated with {{ device.ip }}
+                    Latest activity for {{ device.ip }}
                 </p>
-            </div>
+            </div>  
 
             {% if related_events %}
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Time</th>
-                            <th>Event</th>
-                            <th>Hostname</th>
-                            <th>IP Address</th>
-                            <th>MAC Address</th>
-                        </tr>
-                    </thead>
+            <div class="timeline">
+                {% for event in related_events %}
+                <article class="timeline-item">
+                    <div class="timeline-marker"></div>
 
-                    <tbody>
-                        {% for event in related_events %}
-                        <tr>
-                            <td>{{ event.display_time }}</td>
+                    <div class="timeline-content">
+                        <div class="timeline-heading">
+                            <strong>{{ event.event_type }}</strong>
+                            <span>{{ event.display_time }}</span>
+                        </div>
 
-                            <td>
-                                <span class="event-badge">
-                                    {{ event.event_type }}
-                                </span>
-                            </td>
+                        <div class="timeline-details">
+                            {% if event.details.new_name %}
+                            <p>
+                                New name:
+                                <strong>{{ event.details.new_name }}</strong>
+                            </p>
+                            {% endif %}
 
-                            <td>{{ event.hostname }}</td>
-                            <td>{{ event.ip }}</td>
+                            {% if event.details.owner %}
+                            <p>
+                                Owner:
+                                <strong>{{ event.details.owner }}</strong>
+                            </p>
+                            {% endif %}
 
-                            <td class="monospace">
-                                {{ event.mac }}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                            {% if event.details.open_port_count is defined %}
+                            <p>
+                                Open ports detected:
+                                <strong>
+                                    {{ event.details.open_port_count }}
+                                </strong>
+                            </p>
+                            {% endif %}
+
+                            <p>
+                                Hostname:
+                                <strong>{{ event.hostname }}</strong>
+                            </p>
+
+                            <p>
+                                MAC:
+                                <strong class="monospace">
+                                    {{ event.mac }}
+                                </strong>
+                            </p>
+                        </div>
+                    </div>
+                </article>
+                {% endfor %}
             </div>
             {% else %}
             <div class="empty-state">
-                No recent security events are associated with this device.
+                No timeline activity has been recorded for this device.
             </div>
             {% endif %}
         </section>
