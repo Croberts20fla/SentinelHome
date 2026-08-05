@@ -30,6 +30,8 @@ from modules.trusted_manager import (
     remove_trusted_device,
     rename_trusted_device,
 )
+from modules.risk_engine import calculate_device_risk
+   
 
 app = Flask(__name__)
 
@@ -89,13 +91,18 @@ def device_details(ip_address):
 
     port_scan = saved_scans.get(ip_address)
 
+    risk_assessment = calculate_device_risk(
+        selected_device,
+        port_scan,
+    )
+
     return render_template(
         "device_details.html",
         device=selected_device,
         related_events=related_events,
         port_scan=port_scan,
+        risk_assessment=risk_assessment,
     )
-
 
 @app.route(
     "/device/<path:ip_address>/scan-ports",

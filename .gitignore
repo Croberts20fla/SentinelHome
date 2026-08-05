@@ -16,6 +16,11 @@ logs/
 
 # Private configuration
 trusted_devices.json
+live_inventory.json
+
+# Local database
+data/
+*.db
 
 # Environment variables
 .env

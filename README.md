@@ -1,28 +1,154 @@
-# 🛡️ SentinelHome
+# 🛡️ SentinelHome 2.0
 
-A Python-based home network security monitoring application that discovers devices on a local network, identifies trusted and unknown devices, generates desktop alerts, logs security events, and provides a web dashboard for monitoring.
+SentinelHome is a Python-based home network security monitoring application designed to provide real-time visibility into devices connected to a local network.
+
+The application discovers network devices, maintains a trusted-device inventory, identifies unknown devices, logs security events, performs device risk assessments, supports on-demand port scanning, and provides an interactive Flask-based security dashboard.
+
+SentinelHome began as a simple network discovery project and has evolved into a more complete home network security monitoring platform.
 
 ---
 
 ## Overview
 
-SentinelHome was built as part of my cybersecurity portfolio while pursuing a Bachelor of Science in Information Technologies and a Master of Science in Cybersecurity Risk Management.
+SentinelHome was developed as a hands-on cybersecurity portfolio project to strengthen practical skills in network monitoring, security engineering, Python development, and defensive security.
 
-The goal of this project is to simulate the type of endpoint and network visibility used by security operations teams while demonstrating practical Python development, networking, and cybersecurity concepts.
+The project provides a controlled environment for working with concepts commonly used in security operations, including:
+
+- Asset discovery
+- Network visibility
+- Unknown-device detection
+- Security event logging
+- Device classification
+- Risk assessment
+- Port scanning
+- Trusted asset management
+- Security dashboard development
+
+The goal is to continue expanding SentinelHome as I develop additional cybersecurity and security engineering skills.
 
 ---
 
-## Features
+## What's New in SentinelHome 2.0
+
+SentinelHome 2.0 significantly expands the original project.
+
+### Redesigned Security Dashboard
+
+The dashboard provides a centralized view of the current security state of the network, including:
+
+- Devices currently online
+- Trusted devices
+- Unknown devices
+- Security event totals
+- Latest unknown-device detection
+- Monitoring status
+- Recent security events
+- Live device inventory
+- Automatic dashboard refresh
+
+### Live Device Inventory
+
+SentinelHome maintains a live inventory of discovered network assets and displays:
+
+- Device name
+- Hostname
+- IP address
+- MAC address
+- Vendor
+- Trust status
+- Online status
+- Last-seen timestamp
+
+### Unknown Device Detection
+
+Devices that are not present in the trusted inventory are automatically identified as unknown.
+
+Unknown-device detections are:
+
+- Displayed prominently on the dashboard
+- Recorded as security events
+- Added to historical event logs
+- Available for review and approval
+
+### Device Management
+
+Devices can be managed directly through the web interface.
+
+Current management capabilities include:
+
+- Approve unknown devices
+- Add devices to the trusted inventory
+- Rename devices
+- Remove devices from the trusted inventory
+- View detailed device information
+
+### Device Profile Pages
+
+Individual device profiles provide a more detailed view of each network asset.
+
+Device profiles include:
+
+- Device identity information
+- Hostname
+- Network addressing information
+- Vendor information
+- Trust status
+- Online status
+- Last-seen activity
+- Device management controls
+- Security posture information
+
+### Device Risk Assessment
+
+SentinelHome evaluates device information and presents a risk score to help identify devices that may require additional review.
+
+Risk assessments can consider information such as:
+
+- Trusted or unknown status
+- Known device information
+- Network exposure
+- Open ports discovered during scanning
+
+### On-Demand Port Scanning
+
+Port scans can be initiated directly from a device profile.
+
+Scan results provide additional visibility into network services exposed by a device and can be incorporated into the device's security assessment.
+
+### Security Event Logging
+
+SentinelHome maintains historical security events for later review.
+
+Events include information such as:
+
+- Detection time
+- Event type
+- Hostname
+- Network identifiers
+- Device information
+
+---
+
+## Core Features
 
 - Live network device discovery using Nmap
-- Trusted device inventory
-- Detection of unknown devices
-- Desktop notifications for new devices
-- Event logging
-- Flask web dashboard
+- Trusted-device inventory
+- Unknown-device detection
+- Security event logging
+- Real-time Flask dashboard
+- Live device inventory
+- Device profile pages
+- Device approval workflow
+- Device renaming
+- Trusted-device removal
+- Device risk scoring
+- On-demand port scanning
+- Online/offline device status
+- Last-seen tracking
+- Historical security events
+- Automatic dashboard refresh
 - Modular Python architecture
-- Git version control
-- GitHub portfolio project
+- Persistent application data
 
 ---
 
@@ -31,151 +157,212 @@ The goal of this project is to simulate the type of endpoint and network visibil
 - Python 3
 - Flask
 - Nmap
+- HTML
+- CSS
+- JavaScript
+- Jinja2
+- JSON
+- SQLite
 - PowerShell
 - Git
 - GitHub
-- JSON
 - Windows
-- VS Code
+- Visual Studio Code
 
 ---
 
 ## Project Structure
 
-```
+```text
 SentinelHome/
 │
+├── data/
+│   └── sentinelhome.db
+│
 ├── docs/
+│   ├── architecture.md
+│   ├── changelog.md
+│   └── roadmap.md
+│
 ├── logs/
+│   ├── alerts.log
+│   ├── errors.log
+│   ├── port_scan_results.json
+│   └── sentinelhome_events.jsonl
+│
 ├── modules/
 │   ├── config.py
+│   ├── dashboard_data.py
+│   ├── database.py
 │   ├── event_logger.py
 │   ├── inventory.py
+│   ├── live_inventory.py
 │   ├── notifier.py
 │   ├── scanner.py
+│   ├── trusted_manager.py
 │   └── utils.py
 │
 ├── screenshots/
+├── static/
+├── templates/
 ├── tests/
 │
 ├── dashboard.py
 ├── sentinelhome.py
 ├── requirements.txt
-├── trusted_devices.json
 └── README.md
 ```
 
----
-
-## Current Capabilities
-
-- Discovers devices connected to the local network
-- Maintains a trusted device inventory
-- Detects new or unknown devices
-- Displays live monitoring information
-- Generates desktop notifications
-- Logs security events for future analysis
-
----
-
-## Planned Features
-
-- Live dashboard updates
-- Device history and timelines
-- Risk scoring
-- Email notifications
-- Mobile notifications
-- Device approval directly from the dashboard
-- Port scanning of newly discovered devices
-- Vendor logo support
-- AI-assisted device analysis
-- Wazuh SIEM integration
-- Docker deployment
+> Project structure may continue to change as SentinelHome is developed.
 
 ---
 
 ## Screenshots
 
-### SentinelHome Dashboard
+Screenshots shown in this repository are sanitized to remove or obscure sensitive network identifiers.
 
-![SentinelHome Dashboard](screenshots/dashboard.png)
+### Security Monitoring Dashboard
+
+![SentinelHome 2.0 Dashboard](screenshots/dashboard_v2.png)
+
+### Security Events
+
+![SentinelHome Security Events](screenshots/security_events_v2.png)
 
 ### Live Device Inventory
 
-![Live Device Inventory](screenshots/live_inventory.png)
+![SentinelHome Live Device Inventory](screenshots/live_inventory_v2.png)
+
+### Device Profile
+
+![SentinelHome Device Profile](screenshots/device_profile_v2.png)
+
+### Device Risk Assessment, Network Exposure, and Timeline
+
+![SentinelHome Device Profile Details](screenshots/device_profile_details_v2.png)
+
+---
 
 ---
 
 ## Installation
 
-Clone the repository
+### Clone the repository
 
 ```bash
 git clone https://github.com/Croberts20fla/SentinelHome.git
+cd SentinelHome
 ```
 
-Install dependencies
+### Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Run SentinelHome
+Nmap must also be installed on the host system and available to SentinelHome.
+
+### Run SentinelHome
 
 ```bash
 python sentinelhome.py
 ```
 
-Launch the dashboard
+### Launch the dashboard
 
 ```bash
 python dashboard.py
 ```
 
-Open:
+Then open:
 
-```
+```text
 http://127.0.0.1:5000
 ```
 
 ---
 
+## Security and Privacy
+
+SentinelHome is designed for use on networks that the operator owns or is authorized to monitor.
+
+Screenshots published in this repository are sanitized to avoid unnecessarily exposing internal network information.
+
+Runtime data, logs, trusted-device information, and other environment-specific information should be reviewed before being committed to a public repository.
+
+---
+
+## Roadmap
+
+SentinelHome will continue to evolve as additional security capabilities are developed.
+
+Potential future improvements include:
+
+- Wazuh SIEM integration
+- Enhanced vulnerability analysis
+- Expanded risk-scoring logic
+- Historical device analytics
+- Email or mobile security notifications
+- Authentication and access controls
+- Improved reporting
+- AI-assisted device analysis
+- Docker deployment
+- Cloud-based monitoring capabilities
+
+See `docs/roadmap.md` for additional development plans.
+
+---
+
 ## Why I Built This
 
-I built SentinelHome to strengthen my practical cybersecurity and software development skills through a real-world project.
+I built SentinelHome because I wanted to move beyond studying cybersecurity concepts and apply them to a working project.
 
-This project demonstrates:
+Building the application has required me to work through real technical problems involving network discovery, device identification, application architecture, security monitoring, logging, troubleshooting, and data presentation.
 
-- Python programming
+SentinelHome demonstrates hands-on experience with:
+
+- Python development
 - Network discovery
-- JSON data management
-- Modular software architecture
+- Security monitoring
+- Asset management
+- Security event logging
+- Risk assessment concepts
+- Network troubleshooting
 - Flask web development
+- Data persistence
 - Git and GitHub workflows
-- Security monitoring concepts
+
+The project will continue to grow as I expand my cybersecurity and security engineering knowledge.
 
 ---
 
 ## About Me
 
-I am an IT professional and cybersecurity graduate student at Indiana University, building practical security solutions through hands-on projects focused on network monitoring, automation, and defensive security.
+I hold a Bachelor of Science in Information Technologies and am pursuing a Master of Science in Cybersecurity Risk Management at Indiana University.
 
-My interests include:
+My current areas of focus include:
 
-- Blue Team Operations
 - Security Engineering
-- Python Automation
+- Blue Team Operations
+- Cybersecurity Risk Management
 - Threat Detection
 - Cloud Security
-- SIEM Engineering
+- SIEM
+- Python Automation
 
-GitHub:
+### GitHub
 
 https://github.com/Croberts20fla
 
-LinkedIn:
+### LinkedIn
 
 www.linkedin.com/in/christopher-roberts-324b3b219
+
+---
+
+## Disclaimer
+
+SentinelHome is an educational and cybersecurity portfolio project. Network scanning and monitoring should only be performed on systems and networks you own or have explicit authorization to test.
 
 ---
 

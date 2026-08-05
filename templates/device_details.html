@@ -164,6 +164,38 @@
                 </form>
             </article>
         </section>
+        <section class="panel">
+            <div class="panel-heading">
+                <div>
+                    <p class="panel-eyebrow">SECURITY POSTURE</p>
+                    <h2>Device Risk Assessment</h2>
+                </div>
+
+                <div class="risk-score {{ risk_assessment.css_class }}">
+                    <strong>{{ risk_assessment.score }}</strong>
+                    <span>/ 100</span>
+                </div>
+            </div>
+
+            <div class="risk-summary">
+                <div class="risk-rating {{ risk_assessment.css_class }}">
+                    {{ risk_assessment.rating }} Risk
+                </div>
+
+                <p>
+                    {{ risk_assessment.open_port_count }}
+                    open port(s) included in this assessment.
+                </p>
+            </div>
+
+            <div class="risk-reasons">
+                {% for reason in risk_assessment.reasons %}
+                <div class="risk-reason risk-reason-{{ reason.level }}">
+                    {{ reason.message }}
+                </div>
+                {% endfor %}
+            </div>
+        </section>
 
         <section class="panel">
             <div class="panel-heading">
