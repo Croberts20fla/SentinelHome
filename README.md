@@ -243,8 +243,6 @@ Screenshots shown in this repository are sanitized to remove or obscure sensitiv
 
 ---
 
----
-
 ## Installation
 
 ### Clone the repository
